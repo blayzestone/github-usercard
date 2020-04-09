@@ -3,6 +3,7 @@
            https://api.github.com/users/<your name>
 */
 const cardsContainer = document.querySelector(".cards");
+
 axios.get('https://api.github.com/users/blayzestone')
   .then(response => response.data)
   .then(data => {
@@ -31,19 +32,26 @@ axios.get('https://api.github.com/users/blayzestone')
           user, and adding that card to the DOM.
 */
 
-const friendsArray = [
-  "https://api.github.com/users/tetondan",
-  "https://api.github.com/users/dustinmyers",
-  "https://api.github.com/users/justsml",
-  "https://api.github.com/users/luishrd",
-  "https://api.github.com/users/bigknell"
-];
+generateCardsFromFollowers();
 
-friendsArray.forEach(user => {
-  return axios.get(user)
-    .then(response => cardMaker(response.data))
-    .then(userCard => cardsContainer.appendChild(userCard));
-});
+function generateCardsFromFollowers() {
+  axios.get('https://api.github.com/users/blayzestone/followers')
+    .then(response => {
+      // map the follower endpoints to a new array and return it
+      const followerURLArray = response.data.map(followerData => followerData.url);
+      return followerURLArray;
+    })
+    .then(urlArray => {
+      urlArray.forEach(followerDataURL => { // Make a GET request to each url
+        axios.get(followerDataURL)
+          .then(followerObject => {
+            // Make a card out of the returned data and append it to the cards container
+            const followerCard = cardMaker(followerObject.data);
+            cardsContainer.appendChild(followerCard);
+          });
+      })
+    })
+}
 
 /* Step 3: Create a function that accepts a single object as its only argument,
           Using DOM methods and properties, create a component that will return the following DOM element:
